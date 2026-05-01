@@ -24,7 +24,7 @@ HTML_PAGE = """
     }
 
     .box {
-      max-width: 520px;
+      max-width: 560px;
       margin: auto;
       background: rgba(17, 24, 39, 0.95);
       padding: 20px;
@@ -56,6 +56,14 @@ HTML_PAGE = """
       margin-bottom: 16px;
     }
 
+    .number-big {
+      font-size: 46px;
+      text-align: center;
+      font-weight: 800;
+      margin: 12px 0;
+      color: #facc15;
+    }
+
     .row {
       display: flex;
       justify-content: space-between;
@@ -78,14 +86,6 @@ HTML_PAGE = """
       font-size: 18px;
       word-break: break-word;
       text-align: right;
-    }
-
-    .number-big {
-      font-size: 42px;
-      text-align: center;
-      font-weight: 800;
-      margin: 12px 0;
-      color: #facc15;
     }
 
     .buttons {
@@ -113,10 +113,16 @@ HTML_PAGE = """
       background: #dc2626;
     }
 
+    .refresh {
+      background: #2563eb;
+      width: 100%;
+      margin-top: 10px;
+    }
+
     .clear {
       background: #334155;
-      margin-top: 10px;
       width: 100%;
+      margin-top: 10px;
     }
 
     .status {
@@ -133,15 +139,21 @@ HTML_PAGE = """
       color: #e5e7eb;
       font-size: 16px;
       font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .count {
+      color: #facc15;
+      font-size: 13px;
+      font-weight: normal;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 8px;
       font-size: 13px;
-      overflow: hidden;
-      border-radius: 12px;
     }
 
     th, td {
@@ -162,7 +174,7 @@ HTML_PAGE = """
     }
 
     .table-wrap {
-      max-height: 360px;
+      max-height: 420px;
       overflow-y: auto;
       border: 1px solid #374151;
       border-radius: 12px;
@@ -188,6 +200,7 @@ HTML_PAGE = """
       text-align: center;
       font-size: 12px;
       margin-top: 14px;
+      line-height: 1.5;
     }
   </style>
 </head>
@@ -213,6 +226,11 @@ HTML_PAGE = """
         <span class="label">Colour:</span>
         <span class="value" id="colour">---</span>
       </div>
+
+      <div class="row">
+        <span class="label">Saved Time:</span>
+        <span class="value" id="savedTime">---</span>
+      </div>
     </div>
 
     <div class="buttons">
@@ -220,11 +238,15 @@ HTML_PAGE = """
       <button class="stop" onclick="stopFetch()">Stop</button>
     </div>
 
-    <button class="clear" onclick="clearHistory()">Clear History</button>
+    <button class="refresh" onclick="loadAll()">Refresh Now</button>
+    <button class="clear" onclick="clearTableOnly()">Clear Table View</button>
 
-    <div class="status" id="status">Page loaded. Auto fetch starting...</div>
+    <div class="status" id="status">Page loaded. Auto refresh starting...</div>
 
-    <div class="history-title">History</div>
+    <div class="history-title">
+      <span>Saved History</span>
+      <span class="count" id="totalCount">Total: 0</span>
+    </div>
 
     <div class="table-wrap">
       <table>
@@ -233,7 +255,7 @@ HTML_PAGE = """
             <th>Issue</th>
             <th>Number</th>
             <th>Colour</th>
-            <th>Time</th>
+            <th>Saved Time</th>
           </tr>
         </thead>
         <tbody id="history"></tbody>
@@ -241,16 +263,19 @@ HTML_PAGE = """
     </div>
 
     <div class="small-text">
-      Auto fetch interval: 5 seconds
+      Data is saved in Cloudflare KV storage.<br>
+      Worker auto fetch interval: 1 minute using Cron Trigger.<br>
+      Webpage refresh interval: 10 seconds.
     </div>
   </div>
 
 <script>
 let timer = null;
-let lastIssue = "";
 let isRunning = false;
 
-const API_LINK = "https://government-crystal-florist-reporters.trycloudflare.com/api/latest";
+const API_BASE = "https://live-result-worker.deepkoley156.workers.dev";
+const LATEST_LINK = API_BASE + "/api/latest";
+const HISTORY_LINK = API_BASE + "/api/history";
 
 function colourClass(colour) {
   if (!colour) return "";
@@ -263,61 +288,97 @@ function colourClass(colour) {
   return "";
 }
 
-async function fetchData() {
-  try {
-    document.getElementById("status").innerText = "Fetching...";
+function formatTime(timeText) {
+  if (!timeText) return "---";
 
-    const res = await fetch(API_LINK);
+  try {
+    const d = new Date(timeText);
+    if (isNaN(d.getTime())) return timeText;
+    return d.toLocaleString();
+  } catch (e) {
+    return timeText;
+  }
+}
+
+async function loadLatest() {
+  try {
+    const res = await fetch(LATEST_LINK);
     const data = await res.json();
 
-    if (data.success) {
-      const item = data.result;
-
-      document.getElementById("issueNumber").innerText = item.issueNumber;
-      document.getElementById("number").innerText = item.number;
-      document.getElementById("numberSmall").innerText = item.number;
-
-      const colourEl = document.getElementById("colour");
-      colourEl.innerText = item.colour;
-      colourEl.className = "value " + colourClass(item.colour);
-
-      document.getElementById("status").innerText =
-        "Last update: " + new Date().toLocaleTimeString();
-
-      if (item.issueNumber !== lastIssue) {
-        lastIssue = item.issueNumber;
-
-        const row = `
-          <tr>
-            <td>${item.issueNumber}</td>
-            <td>${item.number}</td>
-            <td class="${colourClass(item.colour)}">${item.colour}</td>
-            <td>${new Date().toLocaleTimeString()}</td>
-          </tr>
-        `;
-
-        document.getElementById("history").insertAdjacentHTML("afterbegin", row);
-      }
-
-    } else {
-      document.getElementById("status").innerText =
-        data.message || "No data found";
+    if (!data.success || !data.result) {
+      document.getElementById("status").innerText = data.message || "Latest data not found";
+      return;
     }
 
-  } catch (err) {
+    const item = data.result;
+
+    document.getElementById("issueNumber").innerText = item.issueNumber || "---";
+    document.getElementById("number").innerText = item.number || "---";
+    document.getElementById("numberSmall").innerText = item.number || "---";
+    document.getElementById("savedTime").innerText = formatTime(item.savedTime);
+
+    const colourEl = document.getElementById("colour");
+    colourEl.innerText = item.colour || "---";
+    colourEl.className = "value " + colourClass(item.colour);
+
     document.getElementById("status").innerText =
-      "Fetch error: " + err.message;
+      "Latest updated: " + new Date().toLocaleTimeString();
+
+  } catch (err) {
+    document.getElementById("status").innerText = "Latest fetch error: " + err.message;
   }
+}
+
+async function loadHistory() {
+  try {
+    const res = await fetch(HISTORY_LINK);
+    const data = await res.json();
+
+    if (!data.success) {
+      document.getElementById("status").innerText = data.message || "History not found";
+      return;
+    }
+
+    document.getElementById("totalCount").innerText = "Total: " + (data.total || 0);
+
+    const tbody = document.getElementById("history");
+    tbody.innerHTML = "";
+
+    const results = data.results || [];
+
+    results.forEach(item => {
+      const row = `
+        <tr>
+          <td>${item.issueNumber || ""}</td>
+          <td>${item.number || ""}</td>
+          <td class="${colourClass(item.colour)}">${item.colour || ""}</td>
+          <td>${formatTime(item.savedTime || item.time)}</td>
+        </tr>
+      `;
+
+      tbody.insertAdjacentHTML("beforeend", row);
+    });
+
+  } catch (err) {
+    document.getElementById("status").innerText = "History fetch error: " + err.message;
+  }
+}
+
+async function loadAll() {
+  document.getElementById("status").innerText = "Refreshing...";
+  await loadLatest();
+  await loadHistory();
 }
 
 function startFetch() {
   if (isRunning) return;
 
   isRunning = true;
-  fetchData();
-  timer = setInterval(fetchData, 5000);
+  loadAll();
 
-  document.getElementById("status").innerText = "Auto fetch started";
+  timer = setInterval(loadAll, 10000);
+
+  document.getElementById("status").innerText = "Auto refresh started";
 }
 
 function stopFetch() {
@@ -325,12 +386,12 @@ function stopFetch() {
   timer = null;
   isRunning = false;
 
-  document.getElementById("status").innerText = "Auto fetch stopped";
+  document.getElementById("status").innerText = "Auto refresh stopped";
 }
 
-function clearHistory() {
+function clearTableOnly() {
   document.getElementById("history").innerHTML = "";
-  lastIssue = "";
+  document.getElementById("status").innerText = "Only table view cleared. Saved data is not deleted.";
 }
 
 window.onload = function() {
