@@ -250,15 +250,16 @@ let timer = null;
 let lastIssue = "";
 let isRunning = false;
 
-// তোমার Termux Cloudflare Tunnel API link
-const API_LINK = "https://those-corrected-fog-duties.trycloudflare.com/api/latest";
+const API_LINK = "https://government-crystal-florist-reporters.trycloudflare.com/api/latest";
 
 function colourClass(colour) {
   if (!colour) return "";
   const c = colour.toLowerCase();
+
   if (c.includes("green")) return "green";
   if (c.includes("red")) return "red";
   if (c.includes("violet")) return "violet";
+
   return "";
 }
 
@@ -280,7 +281,8 @@ async function fetchData() {
       colourEl.innerText = item.colour;
       colourEl.className = "value " + colourClass(item.colour);
 
-      document.getElementById("status").innerText = "Last update: " + new Date().toLocaleTimeString();
+      document.getElementById("status").innerText =
+        "Last update: " + new Date().toLocaleTimeString();
 
       if (item.issueNumber !== lastIssue) {
         lastIssue = item.issueNumber;
@@ -298,11 +300,13 @@ async function fetchData() {
       }
 
     } else {
-      document.getElementById("status").innerText = data.message || "No data found";
+      document.getElementById("status").innerText =
+        data.message || "No data found";
     }
 
   } catch (err) {
-    document.getElementById("status").innerText = "Fetch error: " + err.message;
+    document.getElementById("status").innerText =
+      "Fetch error: " + err.message;
   }
 }
 
