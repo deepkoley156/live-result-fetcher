@@ -7,7 +7,7 @@ HTML_PAGE = """
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Live Result Fetcher</title>
+  <title>Self Learning Prediction Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -23,20 +23,25 @@ HTML_PAGE = """
       padding: 16px;
     }
 
-    .box {
-      max-width: 560px;
+    .container {
+      max-width: 1150px;
       margin: auto;
-      background: rgba(17, 24, 39, 0.95);
-      padding: 20px;
-      border-radius: 22px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
-      border: 1px solid #1f2937;
     }
 
-    h2 {
+    .header {
       text-align: center;
-      margin: 0 0 20px;
-      font-size: 24px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .sub {
+      color: #94a3b8;
+      font-size: 13px;
+      margin-top: 8px;
     }
 
     .live-dot {
@@ -45,30 +50,51 @@ HTML_PAGE = """
       height: 10px;
       background: #22c55e;
       border-radius: 50%;
-      margin-right: 6px;
+      margin-right: 7px;
       box-shadow: 0 0 12px #22c55e;
     }
 
-    .card {
-      background: #1f2937;
-      padding: 16px;
-      border-radius: 16px;
-      margin-bottom: 16px;
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
     }
 
-    .number-big {
-      font-size: 46px;
+    .box {
+      background: rgba(17, 24, 39, 0.96);
+      border: 1px solid #1f2937;
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.38);
+    }
+
+    .box h2 {
+      margin: 0 0 14px;
+      font-size: 20px;
+      color: #e5e7eb;
+    }
+
+    .big-number {
+      font-size: 58px;
       text-align: center;
-      font-weight: 800;
-      margin: 12px 0;
+      font-weight: 900;
       color: #facc15;
+      margin: 8px 0 14px;
+    }
+
+    .predict-number {
+      font-size: 72px;
+      text-align: center;
+      font-weight: 900;
+      color: #38bdf8;
+      margin: 8px 0 6px;
     }
 
     .row {
       display: flex;
       justify-content: space-between;
       gap: 12px;
-      padding: 11px 0;
+      padding: 10px 0;
       border-bottom: 1px solid #374151;
     }
 
@@ -78,67 +104,86 @@ HTML_PAGE = """
 
     .label {
       color: #9ca3af;
-      font-size: 15px;
+      font-size: 14px;
     }
 
     .value {
       font-weight: bold;
-      font-size: 18px;
-      word-break: break-word;
-      text-align: right;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    button {
-      flex: 1;
-      padding: 13px;
-      border: none;
-      border-radius: 14px;
       font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      color: white;
-    }
-
-    .start {
-      background: #16a34a;
-    }
-
-    .stop {
-      background: #dc2626;
-    }
-
-    .refresh {
-      background: #2563eb;
-      width: 100%;
-      margin-top: 10px;
-    }
-
-    .clear {
-      background: #334155;
-      width: 100%;
-      margin-top: 10px;
+      text-align: right;
+      word-break: break-word;
     }
 
     .status {
       text-align: center;
-      margin: 15px 0;
+      margin: 14px 0;
       color: #facc15;
       font-size: 14px;
       min-height: 20px;
     }
 
-    .history-title {
-      margin-top: 18px;
-      margin-bottom: 8px;
-      color: #e5e7eb;
-      font-size: 16px;
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin: 12px 0 0;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 13px;
+      font-size: 15px;
       font-weight: bold;
+      cursor: pointer;
+      color: white;
+    }
+
+    .btn-start {
+      background: #16a34a;
+    }
+
+    .btn-stop {
+      background: #dc2626;
+    }
+
+    .btn-refresh {
+      background: #2563eb;
+    }
+
+    .btn-clear {
+      background: #334155;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .mini {
+      background: #1f2937;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .mini .num {
+      font-size: 24px;
+      font-weight: 900;
+      color: #facc15;
+      margin-top: 6px;
+    }
+
+    .mini .txt {
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .history-title {
+      margin: 16px 0 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -147,7 +192,13 @@ HTML_PAGE = """
     .count {
       color: #facc15;
       font-size: 13px;
-      font-weight: normal;
+    }
+
+    .table-wrap {
+      max-height: 430px;
+      overflow-y: auto;
+      border: 1px solid #374151;
+      border-radius: 14px;
     }
 
     table {
@@ -163,21 +214,15 @@ HTML_PAGE = """
     }
 
     th {
-      color: #facc15;
       background: #111827;
+      color: #facc15;
       position: sticky;
       top: 0;
+      z-index: 2;
     }
 
     td {
       color: #e5e7eb;
-    }
-
-    .table-wrap {
-      max-height: 420px;
-      overflow-y: auto;
-      border: 1px solid #374151;
-      border-radius: 12px;
     }
 
     .green {
@@ -195,57 +240,244 @@ HTML_PAGE = """
       font-weight: bold;
     }
 
-    .small-text {
-      color: #94a3b8;
+    .ok {
+      color: #22c55e;
+      font-weight: bold;
+    }
+
+    .bad {
+      color: #ef4444;
+      font-weight: bold;
+    }
+
+    .warn {
+      color: #facc15;
+      font-weight: bold;
+    }
+
+    .alt-list {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .alt-card {
+      background: #1f2937;
+      border: 1px solid #334155;
+      border-radius: 15px;
+      padding: 12px;
       text-align: center;
+    }
+
+    .alt-card .n {
+      font-size: 28px;
+      font-weight: 900;
+      color: #facc15;
+    }
+
+    .alt-card .p {
+      color: #94a3b8;
       font-size: 12px;
-      margin-top: 14px;
-      line-height: 1.5;
+      margin-top: 4px;
+    }
+
+    .weights {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .weight {
+      background: #1f2937;
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      border: 1px solid #334155;
+    }
+
+    .footer-note {
+      color: #94a3b8;
+      font-size: 12px;
+      text-align: center;
+      margin-top: 16px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 850px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .alt-list {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .weights {
+        grid-template-columns: 1fr;
+      }
+
+      .predict-number {
+        font-size: 58px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="box">
-    <h2><span class="live-dot"></span>Live Result Fetcher</h2>
+<div class="container">
 
-    <div class="card">
-      <div class="number-big" id="number">---</div>
+  <div class="header">
+    <h1><span class="live-dot"></span>Self Learning Prediction Dashboard</h1>
+    <div class="sub">
+      Cloudflare Worker + KV Memory + Adaptive Model Weights
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <div class="box">
+      <h2>Latest Result</h2>
+
+      <div class="big-number" id="latestNumber">---</div>
 
       <div class="row">
         <span class="label">Issue Number:</span>
-        <span class="value" id="issueNumber">---</span>
+        <span class="value" id="latestIssue">---</span>
       </div>
 
       <div class="row">
         <span class="label">Number:</span>
-        <span class="value" id="numberSmall">---</span>
+        <span class="value" id="latestNumberSmall">---</span>
       </div>
 
       <div class="row">
         <span class="label">Colour:</span>
-        <span class="value" id="colour">---</span>
+        <span class="value" id="latestColour">---</span>
       </div>
 
       <div class="row">
         <span class="label">Saved Time:</span>
-        <span class="value" id="savedTime">---</span>
+        <span class="value" id="latestTime">---</span>
+      </div>
+
+      <div class="buttons">
+        <button class="btn-start" onclick="startAuto()">Start</button>
+        <button class="btn-stop" onclick="stopAuto()">Stop</button>
+      </div>
+
+      <div class="buttons">
+        <button class="btn-refresh" onclick="loadAll()">Refresh Now</button>
+        <button class="btn-clear" onclick="clearTableOnly()">Clear Table</button>
+      </div>
+
+      <div class="status" id="status">Page loaded...</div>
+    </div>
+
+    <div class="box">
+      <h2>Next Prediction</h2>
+
+      <div class="predict-number" id="predictedNumber">---</div>
+
+      <div class="row">
+        <span class="label">Predict For Issue:</span>
+        <span class="value" id="predictIssue">---</span>
+      </div>
+
+      <div class="row">
+        <span class="label">Big / Small:</span>
+        <span class="value" id="predictBigSmall">---</span>
+      </div>
+
+      <div class="row">
+        <span class="label">Predicted Colour:</span>
+        <span class="value" id="predictColour">---</span>
+      </div>
+
+      <div class="row">
+        <span class="label">Confidence:</span>
+        <span class="value" id="predictConfidence">---</span>
+      </div>
+
+      <div class="row">
+        <span class="label">Created At:</span>
+        <span class="value" id="predictTime">---</span>
+      </div>
+
+      <h2 style="font-size:16px;margin-top:16px;">Alternative Numbers</h2>
+      <div class="alt-list" id="alternatives"></div>
+    </div>
+
+  </div>
+
+  <div class="cards">
+    <div class="mini">
+      <div class="txt">Total Checked</div>
+      <div class="num" id="totalChecked">0</div>
+    </div>
+    <div class="mini">
+      <div class="txt">Correct</div>
+      <div class="num ok" id="correctCount">0</div>
+    </div>
+    <div class="mini">
+      <div class="txt">Wrong</div>
+      <div class="num bad" id="wrongCount">0</div>
+    </div>
+    <div class="mini">
+      <div class="txt">Accuracy</div>
+      <div class="num" id="accuracyPercent">0%</div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:16px;">
+
+    <div class="box">
+      <h2>Last Checked Prediction</h2>
+
+      <div class="row">
+        <span class="label">Issue:</span>
+        <span class="value" id="checkedIssue">---</span>
+      </div>
+
+      <div class="row">
+        <span class="label">Predicted Number:</span>
+        <span class="value" id="checkedPredicted">---</span>
+      </div>
+
+      <div class="row">
+        <span class="label">Actual Number:</span>
+        <span class="value" id="checkedActual">---</span>
+      </div>
+
+      <div class="row">
+        <span class="label">Result:</span>
+        <span class="value" id="checkedResult">---</span>
+      </div>
+
+      <div class="row">
+        <span class="label">Checked At:</span>
+        <span class="value" id="checkedAt">---</span>
       </div>
     </div>
 
-    <div class="buttons">
-      <button class="start" onclick="startFetch()">Start</button>
-      <button class="stop" onclick="stopFetch()">Stop</button>
+    <div class="box">
+      <h2>Model Weights Memory</h2>
+      <div class="weights" id="weightsBox"></div>
     </div>
 
-    <button class="refresh" onclick="loadAll()">Refresh Now</button>
-    <button class="clear" onclick="clearTableOnly()">Clear Table View</button>
+  </div>
 
-    <div class="status" id="status">Page loaded. Auto refresh starting...</div>
-
+  <div class="box" style="margin-top:16px;">
     <div class="history-title">
-      <span>Saved History</span>
-      <span class="count" id="totalCount">Total: 0</span>
+      <h2 style="margin:0;">Saved History</h2>
+      <span class="count" id="totalHistory">Total: 0</span>
     </div>
 
     <div class="table-wrap">
@@ -258,28 +490,36 @@ HTML_PAGE = """
             <th>Saved Time</th>
           </tr>
         </thead>
-        <tbody id="history"></tbody>
+        <tbody id="historyBody"></tbody>
       </table>
-    </div>
-
-    <div class="small-text">
-      Data is saved in Cloudflare KV storage.<br>
-      Worker auto fetch interval: 1 minute using Cron Trigger.<br>
-      Webpage refresh interval: 10 seconds.
     </div>
   </div>
 
+  <div class="footer-note">
+    This is a probability-based self-learning project. It improves model weights from previous prediction results,
+    but it cannot guarantee future random outcomes.
+  </div>
+
+</div>
+
 <script>
 let timer = null;
-let isRunning = false;
+let running = false;
 
 const API_BASE = "https://live-result-worker.deepkoley156.workers.dev";
-const LATEST_LINK = API_BASE + "/api/latest";
-const HISTORY_LINK = API_BASE + "/api/history";
+
+const URLS = {
+  latest: API_BASE + "/api/latest",
+  history: API_BASE + "/api/history",
+  lastPrediction: API_BASE + "/api/last-prediction",
+  accuracy: API_BASE + "/api/accuracy",
+  lastChecked: API_BASE + "/api/last-checked",
+  fetchNow: API_BASE + "/api/fetch-now"
+};
 
 function colourClass(colour) {
   if (!colour) return "";
-  const c = colour.toLowerCase();
+  const c = String(colour).toLowerCase();
 
   if (c.includes("green")) return "green";
   if (c.includes("red")) return "red";
@@ -300,103 +540,200 @@ function formatTime(timeText) {
   }
 }
 
+function setText(id, value) {
+  document.getElementById(id).innerText =
+    value === undefined || value === null || value === "" ? "---" : value;
+}
+
 async function loadLatest() {
-  try {
-    const res = await fetch(LATEST_LINK);
-    const data = await res.json();
+  const res = await fetch(URLS.latest);
+  const data = await res.json();
 
-    if (!data.success || !data.result) {
-      document.getElementById("status").innerText = data.message || "Latest data not found";
-      return;
-    }
+  if (!data.success || !data.result) return;
 
-    const item = data.result;
+  const item = data.result;
 
-    document.getElementById("issueNumber").innerText = item.issueNumber || "---";
-    document.getElementById("number").innerText = item.number || "---";
-    document.getElementById("numberSmall").innerText = item.number || "---";
-    document.getElementById("savedTime").innerText = formatTime(item.savedTime);
+  setText("latestIssue", item.issueNumber);
+  setText("latestNumber", item.number);
+  setText("latestNumberSmall", item.number);
+  setText("latestTime", formatTime(item.savedTime));
 
-    const colourEl = document.getElementById("colour");
-    colourEl.innerText = item.colour || "---";
-    colourEl.className = "value " + colourClass(item.colour);
+  const colourEl = document.getElementById("latestColour");
+  colourEl.innerText = item.colour || "---";
+  colourEl.className = "value " + colourClass(item.colour);
+}
 
-    document.getElementById("status").innerText =
-      "Latest updated: " + new Date().toLocaleTimeString();
+async function loadPrediction() {
+  const res = await fetch(URLS.lastPrediction);
+  const data = await res.json();
 
-  } catch (err) {
-    document.getElementById("status").innerText = "Latest fetch error: " + err.message;
+  if (!data.success || !data.prediction) return;
+
+  const p = data.prediction;
+
+  setText("predictedNumber", p.predictedNumber);
+  setText("predictIssue", p.predictForIssue);
+  setText("predictBigSmall", p.predictedBigSmall);
+
+  const colourEl = document.getElementById("predictColour");
+  colourEl.innerText = p.predictedColour || "---";
+  colourEl.className = "value " + colourClass(p.predictedColour);
+
+  setText("predictConfidence", (p.confidence || 0) + "%");
+  setText("predictTime", formatTime(p.createdAt));
+
+  const altBox = document.getElementById("alternatives");
+  altBox.innerHTML = "";
+
+  const alternatives = p.alternatives || [];
+
+  alternatives.forEach(a => {
+    const html = `
+      <div class="alt-card">
+        <div class="n">${a.number}</div>
+        <div class="p">${a.bigSmall || ""}</div>
+        <div class="p ${colourClass(a.colour)}">${a.colour || ""}</div>
+        <div class="p">${a.confidence || 0}%</div>
+      </div>
+    `;
+    altBox.insertAdjacentHTML("beforeend", html);
+  });
+
+  if (!alternatives.length) {
+    altBox.innerHTML = "<div class='warn'>No alternatives yet</div>";
+  }
+}
+
+async function loadAccuracy() {
+  const res = await fetch(URLS.accuracy);
+  const data = await res.json();
+
+  if (!data.success) return;
+
+  const acc = data.accuracy || {};
+  const weights = data.modelWeights || {};
+
+  setText("totalChecked", acc.totalChecked || 0);
+  setText("correctCount", acc.correct || 0);
+  setText("wrongCount", acc.wrong || 0);
+  setText("accuracyPercent", (acc.accuracyPercent || 0) + "%");
+
+  const weightsBox = document.getElementById("weightsBox");
+  weightsBox.innerHTML = "";
+
+  Object.keys(weights).forEach(k => {
+    const html = `
+      <div class="weight">
+        <span>${k}</span>
+        <b>${weights[k]}</b>
+      </div>
+    `;
+    weightsBox.insertAdjacentHTML("beforeend", html);
+  });
+}
+
+async function loadLastChecked() {
+  const res = await fetch(URLS.lastChecked);
+  const data = await res.json();
+
+  if (!data.success || !data.lastCheckedPrediction) return;
+
+  const p = data.lastCheckedPrediction;
+
+  setText("checkedIssue", p.predictForIssue);
+  setText("checkedPredicted", p.predictedNumber);
+  setText("checkedActual", p.actualNumber);
+  setText("checkedAt", formatTime(p.checkedAt));
+
+  const resultEl = document.getElementById("checkedResult");
+
+  if (p.correct === true) {
+    resultEl.innerText = "Correct";
+    resultEl.className = "value ok";
+  } else if (p.correct === false) {
+    resultEl.innerText = "Wrong";
+    resultEl.className = "value bad";
+  } else {
+    resultEl.innerText = "---";
+    resultEl.className = "value";
   }
 }
 
 async function loadHistory() {
-  try {
-    const res = await fetch(HISTORY_LINK);
-    const data = await res.json();
+  const res = await fetch(URLS.history);
+  const data = await res.json();
 
-    if (!data.success) {
-      document.getElementById("status").innerText = data.message || "History not found";
-      return;
-    }
+  if (!data.success) return;
 
-    document.getElementById("totalCount").innerText = "Total: " + (data.total || 0);
+  setText("totalHistory", "Total: " + (data.total || 0));
 
-    const tbody = document.getElementById("history");
-    tbody.innerHTML = "";
+  const tbody = document.getElementById("historyBody");
+  tbody.innerHTML = "";
 
-    const results = data.results || [];
+  const results = data.results || [];
 
-    results.forEach(item => {
-      const row = `
-        <tr>
-          <td>${item.issueNumber || ""}</td>
-          <td>${item.number || ""}</td>
-          <td class="${colourClass(item.colour)}">${item.colour || ""}</td>
-          <td>${formatTime(item.savedTime || item.time)}</td>
-        </tr>
-      `;
+  results.forEach(item => {
+    const html = `
+      <tr>
+        <td>${item.issueNumber || ""}</td>
+        <td>${item.number || ""}</td>
+        <td class="${colourClass(item.colour)}">${item.colour || ""}</td>
+        <td>${formatTime(item.savedTime || item.time)}</td>
+      </tr>
+    `;
 
-      tbody.insertAdjacentHTML("beforeend", row);
-    });
-
-  } catch (err) {
-    document.getElementById("status").innerText = "History fetch error: " + err.message;
-  }
+    tbody.insertAdjacentHTML("beforeend", html);
+  });
 }
 
 async function loadAll() {
-  document.getElementById("status").innerText = "Refreshing...";
-  await loadLatest();
-  await loadHistory();
+  try {
+    document.getElementById("status").innerText = "Refreshing...";
+
+    await Promise.all([
+      loadLatest(),
+      loadPrediction(),
+      loadAccuracy(),
+      loadLastChecked(),
+      loadHistory()
+    ]);
+
+    document.getElementById("status").innerText =
+      "Last refresh: " + new Date().toLocaleTimeString();
+
+  } catch (err) {
+    document.getElementById("status").innerText =
+      "Error: " + err.message;
+  }
 }
 
-function startFetch() {
-  if (isRunning) return;
+function startAuto() {
+  if (running) return;
 
-  isRunning = true;
+  running = true;
   loadAll();
-
   timer = setInterval(loadAll, 10000);
 
   document.getElementById("status").innerText = "Auto refresh started";
 }
 
-function stopFetch() {
+function stopAuto() {
   clearInterval(timer);
   timer = null;
-  isRunning = false;
+  running = false;
 
   document.getElementById("status").innerText = "Auto refresh stopped";
 }
 
 function clearTableOnly() {
-  document.getElementById("history").innerHTML = "";
-  document.getElementById("status").innerText = "Only table view cleared. Saved data is not deleted.";
+  document.getElementById("historyBody").innerHTML = "";
+  document.getElementById("status").innerText =
+    "Only table view cleared. Saved data is not deleted.";
 }
 
 window.onload = function() {
-  startFetch();
-}
+  startAuto();
+};
 </script>
 
 </body>
