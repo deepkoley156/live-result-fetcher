@@ -1,18 +1,6 @@
-from flask import Flask, jsonify, render_template_string
-import requests
-import time
+from flask import Flask, render_template_string
 
 app = Flask(__name__)
-
-API_URL = "https://api.bdg88zf.com/api/webapi/GetNoaverageEmerdList"
-
-HEADERS = {
-    "Content-Type": "application/json;charset=UTF-8",
-    "Accept": "application/json, text/plain, */*",
-    "User-Agent": "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36",
-    "Origin": "https://okwin.bio",
-    "Referer": "https://okwin.bio/"
-}
 
 HTML_PAGE = """
 <!DOCTYPE html>
@@ -262,6 +250,9 @@ let timer = null;
 let lastIssue = "";
 let isRunning = false;
 
+// তোমার Termux Cloudflare Tunnel API link
+const API_LINK = "https://those-corrected-fog-duties.trycloudflare.com/api/latest";
+
 function colourClass(colour) {
   if (!colour) return "";
   const c = colour.toLowerCase();
@@ -275,7 +266,7 @@ async function fetchData() {
   try {
     document.getElementById("status").innerText = "Fetching...";
 
-    const res = await fetch("/api/latest");
+    const res = await fetch(API_LINK);
     const data = await res.json();
 
     if (data.success) {
@@ -350,53 +341,6 @@ window.onload = function() {
 @app.route("/")
 def home():
     return render_template_string(HTML_PAGE)
-
-@app.route("/api/latest")
-def latest():
-    payload = {
-        "pageSize": 10,
-        "pageNo": 1,
-        "typeId": 1,
-        "language": 0,
-        "random": "4a0522c6ecd8410496260e686be2a57c",
-        "signature": "334B5E70A0C9B8918B0B15E517E2069C",
-        "timestamp": int(time.time())
-    }
-
-    try:
-        response = requests.post(API_URL, json=payload, headers=HEADERS, timeout=20)
-
-        if response.status_code != 200:
-            return jsonify({
-                "success": False,
-                "message": "API status: " + str(response.status_code)
-            })
-
-        data = response.json()
-        rows = data.get("data", {}).get("list", [])
-
-        if not rows:
-            return jsonify({
-                "success": False,
-                "message": "No data found"
-            })
-
-        latest_item = rows[0]
-
-        return jsonify({
-            "success": True,
-            "result": {
-                "issueNumber": latest_item.get("issueNumber", ""),
-                "number": latest_item.get("number", ""),
-                "colour": latest_item.get("colour", "")
-            }
-        })
-
-    except Exception as e:
-        return jsonify({
-            "success": False,
-            "message": str(e)
-        })
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
